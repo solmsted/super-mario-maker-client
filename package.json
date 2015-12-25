@@ -483,5 +483,5 @@
         "pretest": "npm run lint",
         "test": "babel-node ./node_modules/.bin/babel-istanbul test _mocha"
     },
-    "version": "0.0.0"
+    "version": "0.0.1"
 }
