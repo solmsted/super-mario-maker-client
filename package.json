@@ -9,6 +9,7 @@
         ],
         "sourceMaps": "inline"
     },
+    "bugs": "https://github.com/solmsted/super-mario-maker-client/issues",
     "dependencies": {
         "babel-runtime": "~6.3.13",
         "htmlparser2": "~3.9.0"
@@ -455,6 +456,7 @@
             ]
         }
     },
+    "homepage": "https://github.com/solmsted/super-mario-maker-client",
     "keywords": [
         "bookmark",
         "client",
@@ -473,6 +475,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "main": "lib/super-mario-maker-client.js",
     "name": "super-mario-maker-client",
+    "repository": "solmsted/super-mario-maker-client",
     "scripts": {
         "build": "babel js -d lib",
         "doc": "jsdoc -c jsdoc.json",
