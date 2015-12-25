@@ -1,0 +1,20 @@
+{
+    "opts": {
+        "destination": "doc",
+        "package": "package.json",
+        "readme": "README.md",
+        "template": "./node_modules/ink-docstrap/template"
+    },
+    "source": {
+        "include": [
+            "js"
+        ]
+    },
+    "templates": {
+        "linenums": true,
+        "outputSourceFiles": true,
+        "syntaxTheme": "dark",
+        "systemName": "super-mario-maker-client",
+        "theme": "cyborg"
+    }
+}
