@@ -201,6 +201,8 @@ read-only Boolean property `isLoggedIn`.
 Development
 -----------
 
+https://github.com/solmsted/super-mario-maker-client
+
 The `master` branch will always point to the current stable release.  Every
 release will be tagged by version.  The `develop` branch will contain all new
 commits between releases.  Pull requests should be based from and sent to the
