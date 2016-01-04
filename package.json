@@ -26,7 +26,8 @@
         "in-publish": "~2.0.0",
         "ink-docstrap": "~1.1.0",
         "jsdoc": "~3.4.0",
-        "mocha": "~2.3.4"
+        "mocha": "~2.3.4",
+        "nock": "~3.6.0"
     },
     "engines": {
         "node": "^5.0.0",
