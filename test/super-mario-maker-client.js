@@ -7,89 +7,16 @@ import {
     it
 } from 'mocha';
 
-import {
-    default as SuperMarioMakerClient,
+import expectCourse from './js/expect-course.js';
+
+import SuperMarioMakerClient, {
     fetchCourse,
     logIn
 } from '../js/super-mario-maker-client.js';
 
 const courseId = process.env.COURSE_ID,
     password = process.env.PASSWORD,
-    username = process.env.USERNAME,
-
-    testCourse = course => {
-        expect(course).to.be.an('object');
-        expect(course).to.have.property('attempts').that.is.a('number');
-        if (course.cleared) {
-            expect(course).to.have.property('cleared', true);
-        }
-        if (course.clearedBy) {
-            expect(course).to.have.property('clearedBy').that.is.an.instanceOf(Array);
-            course.clearedBy.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        expect(course).to.have.property('clearRate').that.is.a('number');
-        expect(course).to.have.property('clears').that.is.a('number');
-        expect(course).to.have.property('courseId', courseId);
-        expect(course).to.have.property('creator').that.is.an('object');
-        expect(course.creator).to.have.property('country').that.is.a('string');
-        expect(course.creator).to.have.property('medals').that.is.a('number');
-        expect(course.creator).to.have.property('miiIconUrl').that.is.a('string');
-        expect(course.creator).to.have.property('miiName').that.is.a('string');
-        expect(course).to.have.property('csrfToken').that.is.a('string');
-        expect(course).to.have.property('difficulty').that.is.a('string');
-        if (course.firstClearBy) {
-            expect(course).to.have.property('firstClearBy').that.is.an('object');
-            expect(course.firstClearBy).to.have.property('country').that.is.a('string');
-            expect(course.firstClearBy).to.have.property('miiIconUrl').that.is.a('string');
-            expect(course.firstClearBy).to.have.property('miiName').that.is.a('string');
-        }
-        expect(course).to.have.property('gameStyle').that.is.a('string');
-        expect(course).to.have.property('imageUrl').that.is.a('string');
-        expect(course).to.have.property('miiversePostUrl').that.is.a('string');
-        expect(course).to.have.property('players').that.is.a('number');
-        if (course.recentPlayers) {
-            expect(course).to.have.property('recentPlayers').that.is.an.instanceOf(Array);
-            course.recentPlayers.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        if (course.starredBy) {
-            expect(course).to.have.property('starredBy').that.is.an.instanceOf(Array);
-            course.starredBy.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        expect(course).to.have.property('stars').that.is.a('number');
-        if (course.tag) {
-            expect(course).to.have.property('tag').that.is.a('string');
-        }
-        expect(course).to.have.property('thumbnailUrl').that.is.a('string');
-        expect(course).to.have.property('title').that.is.a('string');
-        expect(course).to.have.property('tweets').that.is.a('number');
-        expect(course).to.have.property('uploadDate').that.is.an.instanceOf(Date);
-        if (course.yourBestTime) {
-            expect(course).to.have.property('yourBestTime').that.is.a('number');
-        }
-        if (course.worldRecord) {
-            expect(course).to.have.property('worldRecord').that.is.an('object');
-            expect(course.worldRecord).to.have.property('player').that.is.an('object');
-            expect(course.worldRecord.player).to.have.property('country').that.is.a('string');
-            expect(course.worldRecord.player).to.have.property('miiIconUrl').that.is.a('string');
-            expect(course.worldRecord.player).to.have.property('miiName').that.is.a('string');
-            expect(course.worldRecord).to.have.property('time').that.is.a('number');
-        }
-    };
+    username = process.env.USERNAME;
 
 describe('SuperMarioMakerClient', function () {
     this.timeout(28657);
@@ -124,7 +51,9 @@ describe('SuperMarioMakerClient', function () {
                 return;
             }
 
-            testCourse(course);
+            expectCourse(course, {
+                courseId
+            });
 
             callbackFunction();
         });
@@ -163,7 +92,9 @@ describe('SuperMarioMakerClient', function () {
                     return;
                 }
 
-                testCourse(course);
+                expectCourse(course, {
+                    courseId
+                });
 
                 superMarioMakerClient.bookmarkCourse(course, error => {
                     if (error) {

@@ -21,6 +21,7 @@
         "babel-plugin-transform-runtime": "~6.3.13",
         "babel-preset-es2015-node5": "~1.1.1",
         "chai": "~3.4.1",
+        "chai-datetime": "~1.4.0",
         "eslint": "~1.10.3",
         "in-publish": "~2.0.0",
         "ink-docstrap": "~1.1.0",
@@ -479,7 +480,7 @@
     "scripts": {
         "build": "babel js -d lib",
         "doc": "jsdoc -c jsdoc.json",
-        "lint": "eslint js test",
+        "lint": "eslint js test test/js",
         "posttest": "[ -z \"$npm_config_coverage\" ] || babel-istanbul check-coverage --branches 75 --functions 75 --lines 75 --statements 75",
         "prebuild": "rm -rf lib",
         "prepublish": "not-in-install && npm test --coverage && npm run build",
