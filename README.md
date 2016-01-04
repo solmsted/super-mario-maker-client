@@ -57,6 +57,8 @@ It may contain any or all of the following properties:
 * `clearRate`: The clear rate as a number from `0` to `100`
 * `clears`: The number of clears on this course
 * `courseId`: The course id
+* `createdAt`: A string indicating when the course was created.  It may be a
+    date like `11/29/2015` or a relative time like `7 days ago`.
 * `creator`: The player that created this course
 * `csrfToken`: This is an authentication token that is required to bookmark the
     course.  It will be different every time.
@@ -76,8 +78,10 @@ It may contain any or all of the following properties:
 * `thumbnailUrl`: The URL of this course's thumbnail
 * `title`: The title of this course
 * `tweets`: The number of times this course has been shared on Twitter
-* `uploadDate`: A `Date` object for the date this course was uploaded.  The time
-    will be set to midnight in your local timezone.
+* `uploadDate`: A `Date` object for when this course was uploaded.  If
+    `createdAt` is a date string, that date will be used and the time will be
+    set to midnight in your local timezone.  If `createdAt` is a relative time,
+    that amount of time will be subtracted from now.
 * `yourBestTime`: The fastest time that the logged in user cleared this course.
     This is measured in milliseconds.
 * `worldRecord`: The world record for this course.

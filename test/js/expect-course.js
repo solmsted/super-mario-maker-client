@@ -51,6 +51,12 @@ export default (actual, expected = {}) => {
         expect(actual).to.have.property('courseId').that.is.a('string');
     }
 
+    if (typeof expected.createdAt === 'string') {
+        expect(actual).to.have.property('createdAt', expected.createdAt);
+    } else {
+        expect(actual).to.have.property('createdAt').that.is.a('string');
+    }
+
     if (typeof expected.creator === 'object') {
         expect(actual).to.have.property('creator').that.deep.equals(expected.creator);
     } else {
