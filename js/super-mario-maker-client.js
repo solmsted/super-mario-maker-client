@@ -337,6 +337,46 @@ const _SuperMarioMakerClient = function () {
                                     });
                                 }
                             });
+                        } else if (/(?:^| )course-header(?: |$)/.test(className) && closedNode.text.length) {
+                            const difficulty = closedNode.text.join('');
+
+                            course.difficulty = difficulty.charAt(0).toLowerCase() + difficulty.substr(1).replace(/ /g, '');
+                        } else if (/(?:^| )course-tag(?: |$)/.test(className) && closedNode.text.length) {
+                            const tag = closedNode.text.join('');
+
+                            if (tag && tag !== '---') {
+                                course.tag = tag;
+                            }
+                        } else if (/(?:^| )course-title(?: |$)/.test(className) && closedNode.text.length) {
+                            course.title = closedNode.text.join('');
+                        } else if (/(?:^| )created_at(?: |$)/.test(className) && closedNode.text.length) {
+                            const createdAt = closedNode.text.join(''),
+                                match = createdAt.match(/^(\d+) (day|hour)s? ago$/);
+
+                            course.createdAt = createdAt;
+
+                            if (match) {
+                                let millisecondsAgo;
+
+                                switch (match[2]) {
+                                    case 'day':
+                                        millisecondsAgo = 86400000;
+                                        break;
+                                    case 'hour':
+                                        millisecondsAgo = 3600000;
+                                        break;
+                                    default:
+                                        return;
+                                }
+
+                                course.uploadDate = new Date(new Date().getTime() - match[1] * millisecondsAgo);
+                            } else {
+                                const uploadDate = new Date(createdAt);
+
+                                if (!Number.isNaN(uploadDate.getTime())) {
+                                    course.uploadDate = uploadDate;
+                                }
+                            }
                         } else if (/(?:^| )liked-count(?: |$)/.test(className)) {
                             let digits = '';
 
@@ -581,22 +621,6 @@ const _SuperMarioMakerClient = function () {
                     },
                     ontext (text) {
                         currentNode.text.push(text);
-
-                        const className = currentNode.attributes.class;
-
-                        if (!className) {
-                            return;
-                        }
-
-                        if (/(?:^| )course-header(?: |$)/.test(className)) {
-                            course.difficulty = text.charAt(0).toLowerCase() + text.substr(1).replace(/ /g, '');
-                        } else if (/(?:^| )course-tag(?: |$)/.test(className)) {
-                            course.tag = text;
-                        } else if (/(?:^| )course-title(?: |$)/.test(className)) {
-                            course.title = text;
-                        } else if (/(?:^| )created_at(?: |$)/.test(className)) {
-                            course.uploadDate = new Date(text);
-                        }
                     }
                 }, {
                     decodeEntities: true,

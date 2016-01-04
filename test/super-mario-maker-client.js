@@ -3,93 +3,29 @@ import {
 } from 'chai';
 
 import {
+    after,
+    afterEach,
+    before,
     describe,
     it
 } from 'mocha';
 
+import nock from 'nock';
+
 import {
-    default as SuperMarioMakerClient,
+    join
+} from 'path';
+
+import expectCourse from './js/expect-course.js';
+
+import SuperMarioMakerClient, {
     fetchCourse,
     logIn
 } from '../js/super-mario-maker-client.js';
 
 const courseId = process.env.COURSE_ID,
     password = process.env.PASSWORD,
-    username = process.env.USERNAME,
-
-    testCourse = course => {
-        expect(course).to.be.an('object');
-        expect(course).to.have.property('attempts').that.is.a('number');
-        if (course.cleared) {
-            expect(course).to.have.property('cleared', true);
-        }
-        if (course.clearedBy) {
-            expect(course).to.have.property('clearedBy').that.is.an.instanceOf(Array);
-            course.clearedBy.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        expect(course).to.have.property('clearRate').that.is.a('number');
-        expect(course).to.have.property('clears').that.is.a('number');
-        expect(course).to.have.property('courseId', courseId);
-        expect(course).to.have.property('creator').that.is.an('object');
-        expect(course.creator).to.have.property('country').that.is.a('string');
-        expect(course.creator).to.have.property('medals').that.is.a('number');
-        expect(course.creator).to.have.property('miiIconUrl').that.is.a('string');
-        expect(course.creator).to.have.property('miiName').that.is.a('string');
-        expect(course).to.have.property('csrfToken').that.is.a('string');
-        expect(course).to.have.property('difficulty').that.is.a('string');
-        if (course.firstClearBy) {
-            expect(course).to.have.property('firstClearBy').that.is.an('object');
-            expect(course.firstClearBy).to.have.property('country').that.is.a('string');
-            expect(course.firstClearBy).to.have.property('miiIconUrl').that.is.a('string');
-            expect(course.firstClearBy).to.have.property('miiName').that.is.a('string');
-        }
-        expect(course).to.have.property('gameStyle').that.is.a('string');
-        expect(course).to.have.property('imageUrl').that.is.a('string');
-        expect(course).to.have.property('miiversePostUrl').that.is.a('string');
-        expect(course).to.have.property('players').that.is.a('number');
-        if (course.recentPlayers) {
-            expect(course).to.have.property('recentPlayers').that.is.an.instanceOf(Array);
-            course.recentPlayers.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        if (course.starredBy) {
-            expect(course).to.have.property('starredBy').that.is.an.instanceOf(Array);
-            course.starredBy.forEach(player => {
-                expect(player).to.be.an('object');
-                expect(player).to.have.property('country').that.is.a('string');
-                expect(player).to.have.property('miiIconUrl').that.is.a('string');
-                expect(player).to.have.property('miiName').that.is.a('string');
-            });
-        }
-        expect(course).to.have.property('stars').that.is.a('number');
-        if (course.tag) {
-            expect(course).to.have.property('tag').that.is.a('string');
-        }
-        expect(course).to.have.property('thumbnailUrl').that.is.a('string');
-        expect(course).to.have.property('title').that.is.a('string');
-        expect(course).to.have.property('tweets').that.is.a('number');
-        expect(course).to.have.property('uploadDate').that.is.an.instanceOf(Date);
-        if (course.yourBestTime) {
-            expect(course).to.have.property('yourBestTime').that.is.a('number');
-        }
-        if (course.worldRecord) {
-            expect(course).to.have.property('worldRecord').that.is.an('object');
-            expect(course.worldRecord).to.have.property('player').that.is.an('object');
-            expect(course.worldRecord.player).to.have.property('country').that.is.a('string');
-            expect(course.worldRecord.player).to.have.property('miiIconUrl').that.is.a('string');
-            expect(course.worldRecord.player).to.have.property('miiName').that.is.a('string');
-            expect(course.worldRecord).to.have.property('time').that.is.a('number');
-        }
-    };
+    username = process.env.USERNAME;
 
 describe('SuperMarioMakerClient', function () {
     this.timeout(28657);
@@ -112,70 +48,209 @@ describe('SuperMarioMakerClient', function () {
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
     });
 
-    it('should fetch a course without logging in', function (callbackFunction) {
-        if (!courseId) {
-            setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
-            return;
-        }
-
-        fetchCourse(courseId, (error, course) => {
-            if (error) {
-                callbackFunction(error);
-                return;
-            }
-
-            testCourse(course);
-
-            callbackFunction();
+    describe('mocked requests', function () {
+        after(function () {
+            nock.enableNetConnect();
         });
-    });
 
-    it('should log in, fetch a course, bookmark a course, and log out', function (callbackFunction) {
-        if (!courseId) {
-            setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
-            return;
-        }
+        afterEach(function () {
+            nock.cleanAll();
+        });
 
-        if (!password) {
-            setImmediate(callbackFunction, new Error('Please set PASSWORD before running tests.'));
-            return;
-        }
+        before(function () {
+            nock.disableNetConnect();
+        });
 
-        if (!username) {
-            setImmediate(callbackFunction, new Error('Please set USERNAME before running tests.'));
-            return;
-        }
+        it('should fetch a course without logging in', function (callbackFunction) {
+            const mockedRequests = nock('https://supermariomakerbookmark.nintendo.net').get('/courses/DA56-0000-014A-DA36').replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
 
-        logIn({
-            username,
-            password
-        }, (error, superMarioMakerClient) => {
-            if (error) {
-                callbackFunction(error);
-                return;
-            }
-
-            expect(superMarioMakerClient).to.have.property('isLoggedIn', true);
-
-            superMarioMakerClient.fetchCourse(courseId, (error, course) => {
+            fetchCourse('DA56-0000-014A-DA36', (error, course) => {
                 if (error) {
                     callbackFunction(error);
                     return;
                 }
 
-                testCourse(course);
+                expectCourse(course, {
+                    attempts: 34,
+                    clearedBy: [{
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
+                        miiName: 'Jay'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
+                        miiName: 'Gilbes'
+                    }],
+                    clearRate: 5.88,
+                    clears: 2,
+                    courseId: 'DA56-0000-014A-DA36',
+                    createdAt: '7 days ago',
+                    creator: {
+                        country: 'US',
+                        medals: 2,
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3bz2qs0l93czd_normal_face.png',
+                        miiName: 'Steven'
+                    },
+                    csrfToken: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+                    difficulty: 'expert',
+                    firstClearBy: {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
+                        miiName: 'Gilbes'
+                    },
+                    gameStyle: 'superMarioBros3',
+                    imageUrl: 'https://dypqnhofrd2x2.cloudfront.net/DA56-0000-014A-DA36_full.jpg',
+                    miiversePostUrl: 'https://miiverse.nintendo.net/posts/AYMHAAACAAADVHkvlkvobA',
+                    players: 12,
+                    recentPlayers: [{
+                        country: 'JP',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/wcqya9850e6y_normal_face.png',
+                        miiName: 'いっしー'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3ablfalo6lahl_normal_face.png',
+                        miiName: 'RJ'
+                    }, {
+                        country: 'CA',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/32mb4xqiqnz29_normal_face.png',
+                        miiName: 'Chris'
+                    }, {
+                        country: 'JP',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/1hnuppn53vbay_normal_face.png',
+                        miiName: 'ゆうな'
+                    }, {
+                        country: 'JP',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/1s36j4j6a49s3_normal_face.png',
+                        miiName: 'みいー'
+                    }, {
+                        country: 'FR',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/19cae4ogyt99u_normal_face.png',
+                        miiName: 'Jonathan'
+                    }, {
+                        country: 'CA',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/5romhgvhjog2_normal_face.png',
+                        miiName: 'devon'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
+                        miiName: 'Jay'
+                    }, {
+                        country: 'DE',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/y0kt3vkt3sz1_normal_face.png',
+                        miiName: 'Marlon'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
+                        miiName: 'Gilbes'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3s10roz55c3kt_normal_face.png',
+                        miiName: 'Dεεst'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3inwjii9bud94_normal_face.png',
+                        miiName: 'Dylan M'
+                    }],
+                    starredBy: [{
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
+                        miiName: 'Jay'
+                    }, {
+                        country: 'US',
+                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
+                        miiName: 'Gilbes'
+                    }],
+                    stars: 2,
+                    thumbnailUrl: 'https://dypqnhofrd2x2.cloudfront.net/DA56-0000-014A-DA36.jpg',
+                    title: 'Boo Y\'all v2',
+                    tweets: 0,
+                    worldRecord: {
+                        player: {
+                            country: 'US',
+                            miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
+                            miiName: 'Gilbes'
+                        },
+                        time: 705900
+                    }
+                });
 
-                superMarioMakerClient.bookmarkCourse(course, error => {
+                mockedRequests.done();
+
+                callbackFunction();
+            });
+        });
+    });
+
+    describe('live requests', function () {
+        it('should fetch a course without logging in', function (callbackFunction) {
+            if (!courseId) {
+                setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
+                return;
+            }
+
+            fetchCourse(courseId, (error, course) => {
+                if (error) {
+                    callbackFunction(error);
+                    return;
+                }
+
+                expectCourse(course, {
+                    courseId
+                });
+
+                callbackFunction();
+            });
+        });
+
+        it('should log in, fetch a course, bookmark a course, and log out', function (callbackFunction) {
+            if (!courseId) {
+                setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
+                return;
+            }
+
+            if (!password) {
+                setImmediate(callbackFunction, new Error('Please set PASSWORD before running tests.'));
+                return;
+            }
+
+            if (!username) {
+                setImmediate(callbackFunction, new Error('Please set USERNAME before running tests.'));
+                return;
+            }
+
+            logIn({
+                username,
+                password
+            }, (error, superMarioMakerClient) => {
+                if (error) {
+                    callbackFunction(error);
+                    return;
+                }
+
+                expect(superMarioMakerClient).to.have.property('isLoggedIn', true);
+
+                superMarioMakerClient.fetchCourse(courseId, (error, course) => {
                     if (error) {
                         callbackFunction(error);
                         return;
                     }
 
-                    superMarioMakerClient.logOut();
+                    expectCourse(course, {
+                        courseId
+                    });
 
-                    expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+                    superMarioMakerClient.bookmarkCourse(course, error => {
+                        if (error) {
+                            callbackFunction(error);
+                            return;
+                        }
 
-                    callbackFunction();
+                        superMarioMakerClient.logOut();
+
+                        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+
+                        callbackFunction();
+                    });
                 });
             });
         });
