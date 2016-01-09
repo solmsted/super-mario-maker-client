@@ -30,7 +30,7 @@ const courseId = process.env.COURSE_ID,
 describe('SuperMarioMakerClient', function () {
     this.timeout(28657);
 
-    it('should be a constructor function', function () {
+    it('should be a constructor function', () => {
         expect(SuperMarioMakerClient).to.be.a('function');
 
         const superMarioMakerClient = new SuperMarioMakerClient();
@@ -39,7 +39,7 @@ describe('SuperMarioMakerClient', function () {
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
     });
 
-    it('should be a factory function', function () {
+    it('should be a factory function', () => {
         expect(SuperMarioMakerClient).to.be.a('function');
 
         const superMarioMakerClient = SuperMarioMakerClient();
@@ -48,20 +48,20 @@ describe('SuperMarioMakerClient', function () {
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
     });
 
-    describe('mocked requests', function () {
-        after(function () {
+    describe('mocked requests', () => {
+        after(() => {
             nock.enableNetConnect();
         });
 
-        afterEach(function () {
+        afterEach(() => {
             nock.cleanAll();
         });
 
-        before(function () {
+        before(() => {
             nock.disableNetConnect();
         });
 
-        it('should fetch a course without logging in', function (callbackFunction) {
+        it('should fetch a course without logging in', callbackFunction => {
             const mockedRequests = nock('https://supermariomakerbookmark.nintendo.net').get('/courses/DA56-0000-014A-DA36').replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
 
             fetchCourse('DA56-0000-014A-DA36', (error, course) => {
@@ -181,8 +181,8 @@ describe('SuperMarioMakerClient', function () {
         });
     });
 
-    describe('live requests', function () {
-        it('should fetch a course without logging in', function (callbackFunction) {
+    describe('live requests', () => {
+        it('should fetch a course without logging in', callbackFunction => {
             if (!courseId) {
                 setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
                 return;
@@ -202,7 +202,7 @@ describe('SuperMarioMakerClient', function () {
             });
         });
 
-        it('should log in, fetch a course, bookmark a course, and log out', function (callbackFunction) {
+        it('should log in, fetch a course, bookmark a course, and log out', callbackFunction => {
             if (!courseId) {
                 setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
                 return;
