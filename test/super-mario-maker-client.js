@@ -41,6 +41,7 @@ describe('SuperMarioMakerClient', function () {
 
         expect(superMarioMakerClient).to.be.an('object');
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
+        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
     });
 
     it('should be a factory function', () => {
@@ -50,6 +51,7 @@ describe('SuperMarioMakerClient', function () {
 
         expect(superMarioMakerClient).to.be.an('object');
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
+        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
     });
 
     describe('mocked requests', () => {
