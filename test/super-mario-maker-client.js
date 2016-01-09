@@ -23,9 +23,11 @@ import SuperMarioMakerClient, {
     logIn
 } from '../js/super-mario-maker-client.js';
 
+/* eslint-disable no-process-env */
 const courseId = process.env.COURSE_ID,
     password = process.env.PASSWORD,
     username = process.env.USERNAME;
+/* eslint-enable no-process-env */
 
 describe('SuperMarioMakerClient', function () {
     this.timeout(28657);
@@ -42,7 +44,7 @@ describe('SuperMarioMakerClient', function () {
     it('should be a factory function', () => {
         expect(SuperMarioMakerClient).to.be.a('function');
 
-        const superMarioMakerClient = SuperMarioMakerClient();
+        const superMarioMakerClient = SuperMarioMakerClient(); // eslint-disable-line new-cap
 
         expect(superMarioMakerClient).to.be.an('object');
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
