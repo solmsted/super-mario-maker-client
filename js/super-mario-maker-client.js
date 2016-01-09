@@ -678,8 +678,8 @@ const _SuperMarioMakerClient = function () {
                 this._request({
                     body: _stringifyQuery(Object.assign(query, {
                         lang: this._lang,
-                        nintendo_authenticate: '',
-                        nintendo_authorize: '',
+                        nintendo_authenticate: '', // eslint-disable-line camelcase
+                        nintendo_authorize: '', // eslint-disable-line camelcase
                         password,
                         scope: '',
                         username
