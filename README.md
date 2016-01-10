@@ -120,7 +120,7 @@ The `logIn` function accepts two arguments:
         `undefined` if an error occurred
 
 Once you have an instance of Super Mario Maker Client, you may call methods such
-as `fetchCourse`, `bookmarkCourse`, or `logOut`.
+as `fetchCourse`, `bookmarkCourse`, `unbookmarkCourse`, or `logOut`.
 
 The `fetchCourse` method works exactly the same as the `fetchCourse` function
 described above.
@@ -131,6 +131,13 @@ The `bookmarkCourse` method accepts two arguments:
     * `csrfToken`: The CSRF token assigned to the course
 * `callbackFunction`: A function that accepts one argument:
     * `error`: Either an `Error` instance or `null`
+
+The `unbookmarkCourse` method accepts two arguments:
+    * `config`: A configuration object with the following properties:
+        * `courseId`: The course id to unbookmark
+        * `csrfToken`: The CSRF token assigned to the course
+    * `callbackFunction`: A function that accepts one argument:
+        * `error`: Either an `Error` instance or `null`
 
 The `logOut` method immediately destroys the client's session state.  The
 session may remain active on the server for some time.  There are no arguments.
@@ -164,8 +171,8 @@ logIn({
 ```
 
 Note: Super Mario Maker Client is restricted to sending one request at a time.
-Calling the `bookmarkCourse`, `fetchCourse`, or `logIn` methods many times at
-once will cause the requests to be queued up.
+Calling the `bookmarkCourse`, `fetchCourse`, `logIn`, or `unbookmarkCourse`
+methods many times at once will cause the requests to be queued up.
 
 Advanced Usage
 --------------
@@ -197,10 +204,10 @@ argument with the following optional properties:
 
 Note: Changing these configurations is not recommended.
 
-Once an instance is created, the `bookmarkCourse`, `fetchCourse`, `logIn`, and
-`logOut` methods will work as described above with one exception: The `logIn`
-method will not return the instance to the callback function.  There is also a
-read-only Boolean property `isLoggedIn`.
+Once an instance is created, the `bookmarkCourse`, `fetchCourse`, `logIn`,
+`logOut`, and `unbookmarkCourse` methods will work as described above with one
+exception: The `logIn` method will not return the instance to the callback
+function.  There is also a read-only Boolean property `isLoggedIn`.
 
 Development
 -----------

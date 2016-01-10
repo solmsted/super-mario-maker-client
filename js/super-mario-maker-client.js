@@ -678,8 +678,8 @@ const _SuperMarioMakerClient = function () {
                 this._request({
                     body: _stringifyQuery(Object.assign(query, {
                         lang: this._lang,
-                        nintendo_authenticate: '',
-                        nintendo_authorize: '',
+                        nintendo_authenticate: '', // eslint-disable-line camelcase
+                        nintendo_authorize: '', // eslint-disable-line camelcase
                         password,
                         scope: '',
                         username
@@ -738,6 +738,42 @@ const _SuperMarioMakerClient = function () {
             return this;
         },
         /**
+        @method module:super-mario-maker-client~SuperMarioMakerClient#unbookmarkCourse
+        @arg {Object} config
+        @arg {String} config.courseId
+        @arg {String} config.csrfToken
+        @arg {ErrorCallback} callbackFunction
+        @instance
+        @returns {this}
+        */
+        unbookmarkCourse ({
+            courseId,
+            csrfToken
+        }, callbackFunction) {
+            if (!this._isLoggedIn) {
+                setImmediate(callbackFunction, new Error('Not logged in.'));
+                return this;
+            }
+
+            return this._request({
+                options: {
+                    headers: {
+                        [this._csrfTokenHeaderName]: csrfToken
+                    },
+                    method: 'DELETE'
+                },
+                url: this._getCourseUnbookmarkUrl(courseId)
+            }, (error, response) => {
+                if (error) {
+                    callbackFunction(error);
+                } else if (response.statusCode === 200 || response.statusCode === 302) {
+                    callbackFunction();
+                } else {
+                    callbackFunction(new Error('Failed to unbookmark course.'));
+                }
+            });
+        },
+        /**
         @method module:super-mario-maker-client~SuperMarioMakerClient#_getCourseBookmarkUrl
         @arg {String} courseId
         @protected
@@ -745,6 +781,15 @@ const _SuperMarioMakerClient = function () {
         */
         _getCourseBookmarkUrl (courseId) {
             return `${this._getCourseUrl(courseId)}/play_at_later`;
+        },
+        /**
+        @method module:super-mario-maker-client~SuperMarioMakerClient#_getCourseUnbookmarkUrl
+        @arg {String} courseId
+        @protected
+        @returns {String}
+        */
+        _getCourseUnbookmarkUrl (courseId) {
+            return `${this._superMarioMakerBookmarkUrl}/bookmarks/${courseId}`;
         },
         /**
         @method module:super-mario-maker-client~SuperMarioMakerClient#_getCourseUrl

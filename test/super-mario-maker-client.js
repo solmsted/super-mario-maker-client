@@ -16,6 +16,12 @@ import {
     join
 } from 'path';
 
+import {
+    escape
+} from 'querystring';
+
+import booYall from './js/boo-yall.js';
+
 import expectCourse from './js/expect-course.js';
 
 import SuperMarioMakerClient, {
@@ -23,46 +29,52 @@ import SuperMarioMakerClient, {
     logIn
 } from '../js/super-mario-maker-client.js';
 
+/* eslint-disable no-process-env */
 const courseId = process.env.COURSE_ID,
     password = process.env.PASSWORD,
     username = process.env.USERNAME;
+/* eslint-enable no-process-env */
 
 describe('SuperMarioMakerClient', function () {
     this.timeout(28657);
 
-    it('should be a constructor function', function () {
+    it('should be a constructor function', () => {
         expect(SuperMarioMakerClient).to.be.a('function');
 
         const superMarioMakerClient = new SuperMarioMakerClient();
 
         expect(superMarioMakerClient).to.be.an('object');
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
+        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
     });
 
-    it('should be a factory function', function () {
+    it('should be a factory function', () => {
         expect(SuperMarioMakerClient).to.be.a('function');
 
-        const superMarioMakerClient = SuperMarioMakerClient();
+        const superMarioMakerClient = SuperMarioMakerClient(); // eslint-disable-line new-cap
 
         expect(superMarioMakerClient).to.be.an('object');
         expect(superMarioMakerClient).to.be.an.instanceOf(SuperMarioMakerClient);
+        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
     });
 
-    describe('mocked requests', function () {
-        after(function () {
+    describe('mocked requests', () => {
+        after(() => {
             nock.enableNetConnect();
         });
 
-        afterEach(function () {
+        afterEach(() => {
             nock.cleanAll();
         });
 
-        before(function () {
+        before(() => {
             nock.disableNetConnect();
         });
 
-        it('should fetch a course without logging in', function (callbackFunction) {
-            const mockedRequests = nock('https://supermariomakerbookmark.nintendo.net').get('/courses/DA56-0000-014A-DA36').replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
+        it('should fetch a course without logging in', callbackFunction => {
+            const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
+            .get('/courses/DA56-0000-014A-DA36')
+            .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
 
             fetchCourse('DA56-0000-014A-DA36', (error, course) => {
                 if (error) {
@@ -70,119 +82,141 @@ describe('SuperMarioMakerClient', function () {
                     return;
                 }
 
-                expectCourse(course, {
-                    attempts: 34,
-                    clearedBy: [{
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
-                        miiName: 'Jay'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
-                        miiName: 'Gilbes'
-                    }],
-                    clearRate: 5.88,
-                    clears: 2,
-                    courseId: 'DA56-0000-014A-DA36',
-                    createdAt: '7 days ago',
-                    creator: {
-                        country: 'US',
-                        medals: 2,
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3bz2qs0l93czd_normal_face.png',
-                        miiName: 'Steven'
-                    },
-                    csrfToken: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-                    difficulty: 'expert',
-                    firstClearBy: {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
-                        miiName: 'Gilbes'
-                    },
-                    gameStyle: 'superMarioBros3',
-                    imageUrl: 'https://dypqnhofrd2x2.cloudfront.net/DA56-0000-014A-DA36_full.jpg',
-                    miiversePostUrl: 'https://miiverse.nintendo.net/posts/AYMHAAACAAADVHkvlkvobA',
-                    players: 12,
-                    recentPlayers: [{
-                        country: 'JP',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/wcqya9850e6y_normal_face.png',
-                        miiName: 'いっしー'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3ablfalo6lahl_normal_face.png',
-                        miiName: 'RJ'
-                    }, {
-                        country: 'CA',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/32mb4xqiqnz29_normal_face.png',
-                        miiName: 'Chris'
-                    }, {
-                        country: 'JP',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/1hnuppn53vbay_normal_face.png',
-                        miiName: 'ゆうな'
-                    }, {
-                        country: 'JP',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/1s36j4j6a49s3_normal_face.png',
-                        miiName: 'みいー'
-                    }, {
-                        country: 'FR',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/19cae4ogyt99u_normal_face.png',
-                        miiName: 'Jonathan'
-                    }, {
-                        country: 'CA',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/5romhgvhjog2_normal_face.png',
-                        miiName: 'devon'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
-                        miiName: 'Jay'
-                    }, {
-                        country: 'DE',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/y0kt3vkt3sz1_normal_face.png',
-                        miiName: 'Marlon'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
-                        miiName: 'Gilbes'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3s10roz55c3kt_normal_face.png',
-                        miiName: 'Dεεst'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/3inwjii9bud94_normal_face.png',
-                        miiName: 'Dylan M'
-                    }],
-                    starredBy: [{
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/pvvu3jjpnnd_normal_face.png',
-                        miiName: 'Jay'
-                    }, {
-                        country: 'US',
-                        miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
-                        miiName: 'Gilbes'
-                    }],
-                    stars: 2,
-                    thumbnailUrl: 'https://dypqnhofrd2x2.cloudfront.net/DA56-0000-014A-DA36.jpg',
-                    title: 'Boo Y\'all v2',
-                    tweets: 0,
-                    worldRecord: {
-                        player: {
-                            country: 'US',
-                            miiIconUrl: 'http://mii-images.cdn.nintendo.net/2lt69vsve0ct7_normal_face.png',
-                            miiName: 'Gilbes'
-                        },
-                        time: 705900
-                    }
-                });
+                expectCourse(course, booYall);
 
-                mockedRequests.done();
+                mockedFetchRequest.done();
 
                 callbackFunction();
             });
         });
+
+        it('should log in, fetch a course, bookmark a course, and log out', callbackFunction => {
+            const authorizedSessionId0 = '0123abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
+                authorizedSessionId1 = '1234abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
+                authorizedSessionId2 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
+                authorizedSessionId3 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
+                clientId = 'abcdefghijklmnopqrstuvwxyz012345',
+                code = 'abcdefghijklmnopqrstuvwxyz0123456789abcd',
+                password = 'testnintendonetworkpassword',
+                state = 'abcdefghijklmnopqrstuvwxyz0123456789abcdefghijkl',
+                unauthorizedSessionId = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123'.repeat(6),
+                username = 'testnintendonetworkid',
+
+                callbackUrl = 'https://supermariomakerbookmark.nintendo.net/users/auth/nintendo/callback',
+                logInUrl = `https://id.nintendo.net/oauth/authorize?client_id=${clientId}&redirect_uri=${escape(callbackUrl)}&response_type=code&state=${state}`,
+
+                mockedLogInRequests = [
+                    nock('https://supermariomakerbookmark.nintendo.net')
+                    .get('/users/auth/nintendo')
+                    .reply(302, `Redirecting to ${logInUrl}...`, {
+                        location: logInUrl,
+                        'set-cookie': [
+                            `_supermariomakerbookmark_session=${unauthorizedSessionId}; path=/; secure; HttpOnly`
+                        ]
+                    }),
+                    nock('https://id.nintendo.net')
+                    .post('/oauth/authorize', `client_id=${clientId}&redirect_uri=${escape(callbackUrl)}&response_type=code&state=${state}&lang=en-US&nintendo_authenticate=&nintendo_authorize=&password=${password}&scope=&username=${username}`)
+                    .reply(303, '', {
+                        location: `${callbackUrl}?code=${code}&state=${state}`
+                    }),
+                    nock('https://supermariomakerbookmark.nintendo.net')
+                    .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${unauthorizedSessionId}`))
+                    .get('/users/auth/nintendo/callback')
+                    .query({
+                        code,
+                        state
+                    })
+                    .reply(200, '', {
+                        'set-cookie': [
+                            `_supermariomakerbookmark_session=${authorizedSessionId0}; path=/; secure; HttpOnly`
+                        ]
+                    })
+                ];
+
+            logIn({
+                username,
+                password
+            }, (error, superMarioMakerClient) => {
+                if (error) {
+                    callbackFunction(error);
+                    return;
+                }
+
+                expect(superMarioMakerClient).to.have.property('isLoggedIn', true);
+
+                mockedLogInRequests.forEach(mockedLogInRequest => {
+                    mockedLogInRequest.done();
+                });
+
+                const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId0}`))
+                .get('/courses/DA56-0000-014A-DA36')
+                .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'), {
+                    'set-cookie': [
+                        `_supermariomakerbookmark_session=${authorizedSessionId1}; path=/; secure; HttpOnly`
+                    ]
+                });
+
+                superMarioMakerClient.fetchCourse('DA56-0000-014A-DA36', (error, course) => {
+                    if (error) {
+                        callbackFunction(error);
+                        return;
+                    }
+
+                    expectCourse(course, booYall);
+
+                    mockedFetchRequest.done();
+
+                    const mockedBookmarkRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                    .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId1}`))
+                    .matchHeader('X-CSRF-Token', course.csrfToken)
+                    .post('/courses/DA56-0000-014A-DA36/play_at_later')
+                    .reply(200, '', {
+                        'set-cookie': [
+                            `_supermariomakerbookmark_session=${authorizedSessionId2}; path=/; secure; HttpOnly`
+                        ]
+                    });
+
+                    superMarioMakerClient.bookmarkCourse(course, error => {
+                        if (error) {
+                            callbackFunction(error);
+                            return;
+                        }
+
+                        mockedBookmarkRequest.done();
+
+                        const mockedUnbookmarkRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                        .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId2}`))
+                        .matchHeader('X-CSRF-Token', course.csrfToken)
+                        .delete('/bookmarks/DA56-0000-014A-DA36')
+                        .reply(200, '', {
+                            'set-cookie': [
+                                `_supermariomakerbookmark_session=${authorizedSessionId3}; path=/; secure; HttpOnly`
+                            ]
+                        });
+
+                        superMarioMakerClient.unbookmarkCourse(course, error => {
+                            if (error) {
+                                callbackFunction(error);
+                                return;
+                            }
+
+                            mockedUnbookmarkRequest.done();
+
+                            superMarioMakerClient.logOut();
+
+                            expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+
+                            callbackFunction();
+                        });
+                    });
+                });
+            });
+        });
     });
 
-    describe('live requests', function () {
-        it('should fetch a course without logging in', function (callbackFunction) {
+    describe('live requests', () => {
+        it('should fetch a course without logging in', callbackFunction => {
             if (!courseId) {
                 setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
                 return;
@@ -202,7 +236,7 @@ describe('SuperMarioMakerClient', function () {
             });
         });
 
-        it('should log in, fetch a course, bookmark a course, and log out', function (callbackFunction) {
+        it('should log in, fetch a course, bookmark a course, unbookmark a course, and log out', callbackFunction => {
             if (!courseId) {
                 setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
                 return;
@@ -245,11 +279,18 @@ describe('SuperMarioMakerClient', function () {
                             return;
                         }
 
-                        superMarioMakerClient.logOut();
+                        superMarioMakerClient.unbookmarkCourse(course, error => {
+                            if (error) {
+                                callbackFunction(error);
+                                return;
+                            }
 
-                        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+                            superMarioMakerClient.logOut();
 
-                        callbackFunction();
+                            expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+
+                            callbackFunction();
+                        });
                     });
                 });
             });
