@@ -94,6 +94,7 @@ describe('SuperMarioMakerClient', function () {
             const authorizedSessionId0 = '0123abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId1 = '1234abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId2 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
+                authorizedSessionId3 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 clientId = 'abcdefghijklmnopqrstuvwxyz012345',
                 code = 'abcdefghijklmnopqrstuvwxyz0123456789abcd',
                 password = 'testnintendonetworkpassword',
@@ -162,9 +163,7 @@ describe('SuperMarioMakerClient', function () {
                         return;
                     }
 
-                    expectCourse(course, {
-                        courseId
-                    });
+                    expectCourse(course, booYall);
 
                     mockedFetchRequest.done();
 
@@ -186,11 +185,30 @@ describe('SuperMarioMakerClient', function () {
 
                         mockedBookmarkRequest.done();
 
-                        superMarioMakerClient.logOut();
+                        const mockedUnbookmarkRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                        .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId2}`))
+                        .matchHeader('X-CSRF-Token', course.csrfToken)
+                        .delete('/bookmarks/DA56-0000-014A-DA36')
+                        .reply(200, '', {
+                            'set-cookie': [
+                                `_supermariomakerbookmark_session=${authorizedSessionId3}; path=/; secure; HttpOnly`
+                            ]
+                        });
 
-                        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+                        superMarioMakerClient.unbookmarkCourse(course, error => {
+                            if (error) {
+                                callbackFunction(error);
+                                return;
+                            }
 
-                        callbackFunction();
+                            mockedUnbookmarkRequest.done();
+
+                            superMarioMakerClient.logOut();
+
+                            expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+
+                            callbackFunction();
+                        });
                     });
                 });
             });
@@ -218,7 +236,7 @@ describe('SuperMarioMakerClient', function () {
             });
         });
 
-        it('should log in, fetch a course, bookmark a course, and log out', callbackFunction => {
+        it('should log in, fetch a course, bookmark a course, unbookmark a course, and log out', callbackFunction => {
             if (!courseId) {
                 setImmediate(callbackFunction, new Error('Please set COURSE_ID before running tests.'));
                 return;
@@ -261,11 +279,18 @@ describe('SuperMarioMakerClient', function () {
                             return;
                         }
 
-                        superMarioMakerClient.logOut();
+                        superMarioMakerClient.unbookmarkCourse(course, error => {
+                            if (error) {
+                                callbackFunction(error);
+                                return;
+                            }
 
-                        expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+                            superMarioMakerClient.logOut();
 
-                        callbackFunction();
+                            expect(superMarioMakerClient).to.have.property('isLoggedIn', false);
+
+                            callbackFunction();
+                        });
                     });
                 });
             });
