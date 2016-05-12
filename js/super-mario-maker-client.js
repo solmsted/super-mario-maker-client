@@ -168,7 +168,7 @@ const _SuperMarioMakerClient = _make({
                                 message: 'Closing tag had no matching open tag.'
                             }));
 
-                            // TODO: stop the parser
+                            response.unpipe();
                             return;
                         }
 
