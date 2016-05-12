@@ -1,8 +1,4 @@
 import {
-    expect
-} from 'chai';
-
-import {
     after,
     afterEach,
     before,
@@ -10,24 +6,40 @@ import {
     it
 } from 'mocha';
 
-import nock from 'nock';
+import SuperMarioMakerClient, {
+    fetchCourse,
+    logIn
+} from '../js/super-mario-maker-client.js';
 
 import {
-    join
-} from 'path';
+    each as asyncEach
+} from 'async';
+
+import booYall from './js/boo-yall.js';
+
+import castleRun from './js/castle-run.js';
 
 import {
     escape
 } from 'querystring';
 
-import booYall from './js/boo-yall.js';
+import {
+    expect
+} from 'chai';
 
 import expectCourse from './js/expect-course.js';
 
-import SuperMarioMakerClient, {
-    fetchCourse,
-    logIn
-} from '../js/super-mario-maker-client.js';
+import firesnakes from './js/firesnakes.js';
+
+import {
+    join
+} from 'path';
+
+import nock from 'nock';
+
+import spaceBetween from './js/space-between.js';
+
+import thwompSweatTears from './js/thwomp-sweat-tears.js';
 
 /* eslint-disable no-process-env */
 const courseId = process.env.COURSE_ID,
@@ -71,26 +83,43 @@ describe('SuperMarioMakerClient', function () {
             nock.disableNetConnect();
         });
 
-        it('should fetch a course without logging in', callbackFunction => {
-            const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
-            .get('/courses/DA56-0000-014A-DA36')
-            .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
+        it('should fetch courses without logging in', callbackFunction => {
+            asyncEach([{
+                courseId: 'DA56-0000-014A-DA36',
+                expected: booYall
+            }, {
+                courseId: 'EB7E-0000-018A-5CBF',
+                expected: castleRun
+            }, {
+                courseId: '5C1B-0000-014A-5680',
+                expected: firesnakes
+            }, {
+                courseId: 'C0F1-0000-018A-63B8',
+                expected: spaceBetween
+            }, {
+                courseId: '96FA-0000-0103-EB03',
+                expected: thwompSweatTears
+            }], (config, callbackFunction) => {
+                const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                .get(`/courses/${config.courseId}`)
+                .replyWithFile(200, join(__dirname, `responses/${config.courseId}.html`));
 
-            fetchCourse('DA56-0000-014A-DA36', (error, course) => {
-                if (error) {
-                    callbackFunction(error);
-                    return;
-                }
+                fetchCourse(config.courseId, (error, course) => {
+                    if (error) {
+                        callbackFunction(error);
+                        return;
+                    }
 
-                expectCourse(course, booYall);
+                    expectCourse(course, config.expected);
 
-                mockedFetchRequest.done();
+                    mockedFetchRequest.done();
 
-                callbackFunction();
-            });
+                    callbackFunction();
+                });
+            }, callbackFunction);
         });
 
-        it('should log in, fetch a course, bookmark a course, and log out', callbackFunction => {
+        it('should log in, fetch a course, bookmark a course, unbookmark a course, and log out', callbackFunction => {
             const authorizedSessionId0 = '0123abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId1 = '1234abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId2 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
@@ -151,7 +180,7 @@ describe('SuperMarioMakerClient', function () {
                 const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
                 .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId0}`))
                 .get('/courses/DA56-0000-014A-DA36')
-                .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'), {
+                .replyWithFile(200, join(__dirname, 'responses/DA56-0000-014A-DA36.html'), {
                     'set-cookie': [
                         `_supermariomakerbookmark_session=${authorizedSessionId1}; path=/; secure; HttpOnly`
                     ]
