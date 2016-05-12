@@ -17,6 +17,8 @@ import {
 
 import booYall from './js/boo-yall.js';
 
+import castleRun from './js/castle-run.js';
+
 import {
     escape
 } from 'querystring';
@@ -34,6 +36,10 @@ import {
 } from 'path';
 
 import nock from 'nock';
+
+import spaceBetween from './js/space-between.js';
+
+import thwompSweatTears from './js/thwomp-sweat-tears.js';
 
 /* eslint-disable no-process-env */
 const courseId = process.env.COURSE_ID,
@@ -82,8 +88,17 @@ describe('SuperMarioMakerClient', function () {
                 courseId: 'DA56-0000-014A-DA36',
                 expected: booYall
             }, {
+                courseId: 'EB7E-0000-018A-5CBF',
+                expected: castleRun
+            }, {
                 courseId: '5C1B-0000-014A-5680',
                 expected: firesnakes
+            }, {
+                courseId: 'C0F1-0000-018A-63B8',
+                expected: spaceBetween
+            }, {
+                courseId: '96FA-0000-0103-EB03',
+                expected: thwompSweatTears
             }], (config, callbackFunction) => {
                 const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
                 .get(`/courses/${config.courseId}`)
