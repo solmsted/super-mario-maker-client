@@ -26,9 +26,13 @@
 @arg {SuperMarioMakerClient} superMarioMakerClient
 */
 
+import _Error from 'isotropic-error';
+
 import {
-    Parser as _HttpParser
+    Parser as _HtmlParser
 } from 'htmlparser2';
+
+import _make from 'isotropic-make';
 
 import {
     parse as _parseUrl
@@ -52,37 +56,7 @@ import {
 @arg {String} [config.superMarioMakerAuthUrl='https://supermariomakerbookmark.nintendo.net/users/auth/nintendo']
 @arg {String} [config.superMarioMakerBookmarkUrl='https://supermariomakerbookmark.nintendo.net']
 */
-const _SuperMarioMakerClient = function (...args) {
-        return this ? typeof this._init === 'function' ? Reflect.apply(this._init, this, args) : this : new _SuperMarioMakerClient();
-    },
-
-    /**
-    @function fetchCourse
-    @arg {String} courseId
-    @arg {CourseCallback} callbackFunction
-    */
-    _fetchCourse = function (...args) {
-        Reflect.apply(_SuperMarioMakerClient.prototype.fetchCourse, _SuperMarioMakerClient(), args);
-    },
-
-    /**
-    @function logIn
-    @arg {Object} config
-    @arg {String} config.password
-    @arg {String} config.username
-    @arg {SuperMarioMakerClientCallback} callbackFunction
-    */
-    _logIn = function (config, callbackFunction) {
-        const superMarioMakerClient = _SuperMarioMakerClient().logIn(config, error => {
-            if (error) {
-                callbackFunction(error);
-            } else {
-                callbackFunction(null, superMarioMakerClient);
-            }
-        });
-    },
-
-    _prototype = {
+const _SuperMarioMakerClient = _make({
         /**
         @method module:super-mario-maker-client~SuperMarioMakerClient#bookmarkCourse
         @arg {Object} config
@@ -97,7 +71,9 @@ const _SuperMarioMakerClient = function (...args) {
             csrfToken
         }, callbackFunction) {
             if (!this._isLoggedIn) {
-                setImmediate(callbackFunction, new Error('Not logged in.'));
+                setImmediate(callbackFunction, _Error({
+                    message: 'Not logged in.'
+                }));
                 return this;
             }
 
@@ -111,11 +87,18 @@ const _SuperMarioMakerClient = function (...args) {
                 url: this._getCourseBookmarkUrl(courseId)
             }, (error, response) => {
                 if (error) {
-                    callbackFunction(error);
+                    callbackFunction(_Error({
+                        error
+                    }));
                 } else if (response.statusCode === 200) {
                     callbackFunction();
                 } else {
-                    callbackFunction(new Error('Failed to bookmark course.'));
+                    callbackFunction(_Error({
+                        details: {
+                            response
+                        },
+                        message: 'Failed to bookmark course.'
+                    }));
                 }
             });
         },
@@ -130,12 +113,19 @@ const _SuperMarioMakerClient = function (...args) {
                 url: this._getCourseUrl(courseId)
             }, (error, response) => {
                 if (error) {
-                    callbackFunction(error);
+                    callbackFunction(_Error({
+                        error
+                    }));
                     return;
                 }
 
                 if (response.statusCode !== 200) {
-                    callbackFunction(new Error('Course request failed.'));
+                    callbackFunction(_Error({
+                        details: {
+                            response
+                        },
+                        message: 'Course request failed.'
+                    }));
                     return;
                 }
 
@@ -153,17 +143,30 @@ const _SuperMarioMakerClient = function (...args) {
                         }
 
                         complete = true;
-                        callbackFunction(error, course);
+
+                        if (error) {
+                            callbackFunction(_Error({
+                                error,
+                                message: 'HTML parse error.'
+                            }));
+                        } else {
+                            callbackFunction(null, course);
+                        }
                     },
                     course = {
                         courseId
                     },
                     gameStyles = this._gameStyles;
 
-                response.pipe(new _HttpParser({
+                response.pipe(new _HtmlParser({
                     onclosetag (name) {
                         if (currentNode.name !== name) {
-                            completeFunction(new Error(`Closing ${name} tag had no matching open tag.`));
+                            completeFunction(_Error({
+                                details: {
+                                    name
+                                },
+                                message: 'Closing tag had no matching open tag.'
+                            }));
 
                             // TODO: stop the parser
                             return;
@@ -572,7 +575,9 @@ const _SuperMarioMakerClient = function (...args) {
                         completeFunction(null, course);
                     },
                     onerror (error) {
-                        completeFunction(error);
+                        completeFunction(_Error({
+                            error
+                        }));
                     },
                     onopentag (name, attributes) {
                         const className = attributes.class,
@@ -652,12 +657,19 @@ const _SuperMarioMakerClient = function (...args) {
                 url: this._superMarioMakerAuthUrl
             }, (error, authResponse) => {
                 if (error) {
-                    callbackFunction(error);
+                    callbackFunction(_Error({
+                        error
+                    }));
                     return;
                 }
 
                 if (authResponse.statusCode !== 302 || typeof authResponse.headers.location !== 'string') {
-                    callbackFunction(new Error('Super Mario Maker auth request failed.'));
+                    callbackFunction(_Error({
+                        details: {
+                            response: authResponse
+                        },
+                        message: 'Super Mario Maker auth request failed.'
+                    }));
                     return;
                 }
 
@@ -665,7 +677,12 @@ const _SuperMarioMakerClient = function (...args) {
                     query = location.query;
 
                 if (!location.hostname || !location.pathname || !query || !query.client_id || !query.redirect_uri || !query.response_type || !query.state) {
-                    callbackFunction(new Error('Super Mario Maker auth request failed.'));
+                    callbackFunction(_Error({
+                        details: {
+                            response: authResponse
+                        },
+                        message: 'Super Mario Maker auth request failed.'
+                    }));
                     return;
                 }
 
@@ -691,12 +708,19 @@ const _SuperMarioMakerClient = function (...args) {
                     updateSession: false
                 }, (error, logInResponse) => {
                     if (error) {
-                        callbackFunction(error);
+                        callbackFunction(_Error({
+                            error
+                        }));
                         return;
                     }
 
                     if (logInResponse.statusCode !== 303 || typeof logInResponse.headers.location !== 'string') {
-                        callbackFunction(new Error('Super Mario Maker log in failed.'));
+                        callbackFunction(_Error({
+                            details: {
+                                response: logInResponse
+                            },
+                            message: 'Super Mario Maker log in failed.'
+                        }));
                         return;
                     }
 
@@ -711,7 +735,9 @@ const _SuperMarioMakerClient = function (...args) {
                         url: logInResponse.headers.location
                     }, error => {
                         if (error) {
-                            callbackFunction(error);
+                            callbackFunction(_Error({
+                                error
+                            }));
                             return;
                         }
 
@@ -745,7 +771,9 @@ const _SuperMarioMakerClient = function (...args) {
             csrfToken
         }, callbackFunction) {
             if (!this._isLoggedIn) {
-                setImmediate(callbackFunction, new Error('Not logged in.'));
+                setImmediate(callbackFunction, _Error({
+                    message: 'Not logged in.'
+                }));
                 return this;
             }
 
@@ -759,11 +787,18 @@ const _SuperMarioMakerClient = function (...args) {
                 url: this._getCourseUnbookmarkUrl(courseId)
             }, (error, response) => {
                 if (error) {
-                    callbackFunction(error);
+                    callbackFunction(_Error({
+                        error
+                    }));
                 } else if (response.statusCode === 200 || response.statusCode === 302) {
                     callbackFunction();
                 } else {
-                    callbackFunction(new Error('Failed to unbookmark course.'));
+                    callbackFunction(_Error({
+                        details: {
+                            response
+                        },
+                        message: 'Failed to unbookmark course.'
+                    }));
                 }
             });
         },
@@ -892,7 +927,22 @@ const _SuperMarioMakerClient = function (...args) {
 
                     this._requestInProgress = false;
                     complete = true;
-                    callbackFunction(error, response);
+
+                    if (error) {
+                        callbackFunction(_Error({
+                            details: {
+                                body,
+                                options,
+                                sendSession,
+                                updateSession,
+                                url
+                            },
+                            error,
+                            message: 'Request error.'
+                        }));
+                    } else {
+                        callbackFunction(null, response);
+                    }
 
                     const next = this._requestQueue.shift();
 
@@ -913,21 +963,51 @@ const _SuperMarioMakerClient = function (...args) {
                     })) {
                         completeFunction(null, response);
                     } else {
-                        completeFunction(new Error('Failed to update session.'));
+                        completeFunction(_Error({
+                            message: 'Failed to update session.'
+                        }));
                     }
                 });
 
             request.on('error', error => {
-                completeFunction(error);
+                completeFunction(_Error({
+                    error
+                }));
             });
 
             request.end(body);
 
             return this;
         }
-    };
+    }),
 
-Reflect.ownKeys(_prototype).forEach(propertyName => Reflect.defineProperty(_SuperMarioMakerClient.prototype, propertyName, Reflect.getOwnPropertyDescriptor(_prototype, propertyName)));
+    /**
+    @function fetchCourse
+    @arg {String} courseId
+    @arg {CourseCallback} callbackFunction
+    */
+    _fetchCourse = function (...args) {
+        Reflect.apply(_SuperMarioMakerClient.prototype.fetchCourse, _SuperMarioMakerClient(), args);
+    },
+
+    /**
+    @function logIn
+    @arg {Object} config
+    @arg {String} config.password
+    @arg {String} config.username
+    @arg {SuperMarioMakerClientCallback} callbackFunction
+    */
+    _logIn = function (config, callbackFunction) {
+        const superMarioMakerClient = _SuperMarioMakerClient().logIn(config, error => {
+            if (error) {
+                callbackFunction(_Error({
+                    error
+                }));
+            } else {
+                callbackFunction(null, superMarioMakerClient);
+            }
+        });
+    };
 
 export {
     _fetchCourse as fetchCourse,
