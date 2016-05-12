@@ -1,8 +1,4 @@
 import {
-    expect
-} from 'chai';
-
-import {
     after,
     afterEach,
     before,
@@ -10,24 +6,28 @@ import {
     it
 } from 'mocha';
 
-import nock from 'nock';
+import SuperMarioMakerClient, {
+    fetchCourse,
+    logIn
+} from '../js/super-mario-maker-client.js';
 
-import {
-    join
-} from 'path';
+import booYall from './js/boo-yall.js';
 
 import {
     escape
 } from 'querystring';
 
-import booYall from './js/boo-yall.js';
+import {
+    expect
+} from 'chai';
 
 import expectCourse from './js/expect-course.js';
 
-import SuperMarioMakerClient, {
-    fetchCourse,
-    logIn
-} from '../js/super-mario-maker-client.js';
+import {
+    join
+} from 'path';
+
+import nock from 'nock';
 
 /* eslint-disable no-process-env */
 const courseId = process.env.COURSE_ID,

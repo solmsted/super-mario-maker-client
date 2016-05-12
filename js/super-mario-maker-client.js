@@ -52,8 +52,8 @@ import {
 @arg {String} [config.superMarioMakerAuthUrl='https://supermariomakerbookmark.nintendo.net/users/auth/nintendo']
 @arg {String} [config.superMarioMakerBookmarkUrl='https://supermariomakerbookmark.nintendo.net']
 */
-const _SuperMarioMakerClient = function () {
-        return this ? typeof this._init === 'function' ? Reflect.apply(this._init, this, arguments) : this : new _SuperMarioMakerClient();
+const _SuperMarioMakerClient = function (...args) {
+        return this ? typeof this._init === 'function' ? Reflect.apply(this._init, this, args) : this : new _SuperMarioMakerClient();
     },
 
     /**
@@ -61,8 +61,8 @@ const _SuperMarioMakerClient = function () {
     @arg {String} courseId
     @arg {CourseCallback} callbackFunction
     */
-    _fetchCourse = function () {
-        Reflect.apply(_SuperMarioMakerClient.prototype.fetchCourse, _SuperMarioMakerClient(), arguments);
+    _fetchCourse = function (...args) {
+        Reflect.apply(_SuperMarioMakerClient.prototype.fetchCourse, _SuperMarioMakerClient(), args);
     },
 
     /**
@@ -276,10 +276,7 @@ const _SuperMarioMakerClient = function () {
 
                                             childNode.children.some(childNode => {
                                                 imgSrc = findImgSrc(childNode);
-
-                                                if (imgSrc) {
-                                                    return true;
-                                                }
+                                                return imgSrc;
                                             });
 
                                             return imgSrc;
@@ -466,10 +463,7 @@ const _SuperMarioMakerClient = function () {
 
                                             childNode.children.some(childNode => {
                                                 imgSrc = findImgSrc(childNode);
-
-                                                if (imgSrc) {
-                                                    return true;
-                                                }
+                                                return imgSrc;
                                             });
 
                                             return imgSrc;
@@ -914,6 +908,8 @@ const _SuperMarioMakerClient = function () {
                             this._session = match[1];
                             return true;
                         }
+
+                        return false;
                     })) {
                         completeFunction(null, response);
                     } else {
