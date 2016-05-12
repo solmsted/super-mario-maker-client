@@ -325,7 +325,24 @@ const _SuperMarioMakerClient = _make({
                                             match = match && match[1];
 
                                             if (match) {
-                                                creator.medals = +match;
+                                                if (match === '11') {
+                                                    let digits = '';
+
+                                                    childNode.children.forEach(childNode => {
+                                                        const className = childNode.attributes.class,
+                                                            match = className && className.match(/(?:^| )typography-(\d)(?: |$)/);
+
+                                                        if (match) {
+                                                            digits += match[1];
+                                                        }
+                                                    });
+
+                                                    if (digits) {
+                                                        creator.medals = +digits;
+                                                    }
+                                                } else {
+                                                    creator.medals = +match;
+                                                }
                                             }
                                         } else if (/(?:^| )name(?: |$)/.test(className)) {
                                             const text = childNode.text[0];

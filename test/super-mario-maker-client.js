@@ -11,6 +11,10 @@ import SuperMarioMakerClient, {
     logIn
 } from '../js/super-mario-maker-client.js';
 
+import {
+    each as asyncEach
+} from 'async';
+
 import booYall from './js/boo-yall.js';
 
 import {
@@ -22,6 +26,8 @@ import {
 } from 'chai';
 
 import expectCourse from './js/expect-course.js';
+
+import firesnakes from './js/firesnakes.js';
 
 import {
     join
@@ -71,26 +77,34 @@ describe('SuperMarioMakerClient', function () {
             nock.disableNetConnect();
         });
 
-        it('should fetch a course without logging in', callbackFunction => {
-            const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
-            .get('/courses/DA56-0000-014A-DA36')
-            .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'));
+        it('should fetch courses without logging in', callbackFunction => {
+            asyncEach([{
+                courseId: 'DA56-0000-014A-DA36',
+                expected: booYall
+            }, {
+                courseId: '5C1B-0000-014A-5680',
+                expected: firesnakes
+            }], (config, callbackFunction) => {
+                const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
+                .get(`/courses/${config.courseId}`)
+                .replyWithFile(200, join(__dirname, `responses/${config.courseId}.html`));
 
-            fetchCourse('DA56-0000-014A-DA36', (error, course) => {
-                if (error) {
-                    callbackFunction(error);
-                    return;
-                }
+                fetchCourse(config.courseId, (error, course) => {
+                    if (error) {
+                        callbackFunction(error);
+                        return;
+                    }
 
-                expectCourse(course, booYall);
+                    expectCourse(course, config.expected);
 
-                mockedFetchRequest.done();
+                    mockedFetchRequest.done();
 
-                callbackFunction();
-            });
+                    callbackFunction();
+                });
+            }, callbackFunction);
         });
 
-        it('should log in, fetch a course, bookmark a course, and log out', callbackFunction => {
+        it('should log in, fetch a course, bookmark a course, unbookmark a course, and log out', callbackFunction => {
             const authorizedSessionId0 = '0123abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId1 = '1234abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
                 authorizedSessionId2 = '2345abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.repeat(6),
@@ -151,7 +165,7 @@ describe('SuperMarioMakerClient', function () {
                 const mockedFetchRequest = nock('https://supermariomakerbookmark.nintendo.net')
                 .matchHeader('Cookie', cookie => typeof cookie === 'string' && cookie.includes(`_supermariomakerbookmark_session=${authorizedSessionId0}`))
                 .get('/courses/DA56-0000-014A-DA36')
-                .replyWithFile(200, join(__dirname, 'responses/boo-yall.html'), {
+                .replyWithFile(200, join(__dirname, 'responses/DA56-0000-014A-DA36.html'), {
                     'set-cookie': [
                         `_supermariomakerbookmark_session=${authorizedSessionId1}; path=/; secure; HttpOnly`
                     ]
